@@ -1,0 +1,159 @@
+datasource postgres {
+  provider = "postgresql"
+  url      = env("DB_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  createdAt DateTime @default(now())
+  firstName String?
+  id        String   @id @default(cuid())
+  lastName  String?
+  orders    Order[]
+  password  String
+  roles     Json
+  updatedAt DateTime @updatedAt
+  username  String   @unique
+}
+
+model Product {
+  attributes ProductAttribute[]
+  brand      String
+  categories Category[]
+  createdAt  DateTime           @default(now())
+  id         String             @id @default(cuid())
+  name       String
+  order      Order?             @relation(fields: [orderId], references: [id])
+  orderId    String?
+  price      Float
+  sku        String
+  updatedAt  DateTime           @updatedAt
+}
+
+model Brand {
+  createdAt   DateTime @default(now())
+  description String
+  id          String   @id @default(cuid())
+  name        String
+  updatedAt   DateTime @updatedAt
+}
+
+model Category {
+  createdAt   DateTime @default(now())
+  description String?
+  id          String   @id @default(cuid())
+  name        String
+  product     Product? @relation(fields: [productId], references: [id])
+  productId   String?
+  updatedAt   DateTime @updatedAt
+}
+
+model Company {
+  address     Address? @relation(fields: [addressId], references: [id])
+  addressId   String?  @unique
+  createdAt   DateTime @default(now())
+  email       String
+  id          String   @id @default(cuid())
+  name        String
+  phoneNumber String?
+  updatedAt   DateTime @updatedAt
+}
+
+model ProductAttribute {
+  createdAt             DateTime               @default(now())
+  description           String?
+  id                    String                 @id @default(cuid())
+  name                  String?
+  product               Product?               @relation(fields: [productId], references: [id])
+  productId             String?
+  productAttributeItems ProductAttributeItem[]
+  updatedAt             DateTime               @updatedAt
+}
+
+model ProductAttributeItem {
+  createdAt          DateTime         @default(now())
+  id                 String           @id @default(cuid())
+  name               String?
+  productAttribute   ProductAttribute @relation(fields: [productAttributeId], references: [id])
+  productAttributeId String
+  updatedAt          DateTime         @updatedAt
+}
+
+model Order {
+  address     Json?
+  coupon      Coupon          @relation(fields: [couponId], references: [id])
+  couponId    String
+  createdAt   DateTime        @default(now())
+  delivery    Delivery        @relation(fields: [deliveryId], references: [id])
+  deliveryId  String
+  id          String          @id @default(cuid())
+  orderNumber String
+  products    Product[]
+  status      EnumOrderStatus
+  updatedAt   DateTime        @updatedAt
+  user        User            @relation(fields: [userId], references: [id])
+  userId      String
+}
+
+model OrderStatus {
+  createdAt DateTime @default(now())
+  id        String   @id @default(cuid())
+  name      String
+  updatedAt DateTime @updatedAt
+}
+
+model Payment {
+  createdAt DateTime @default(now())
+  id        String   @id @default(cuid())
+  name      String
+  updatedAt DateTime @updatedAt
+}
+
+model Delivery {
+  cost        Float?
+  createdAt   DateTime @default(now())
+  description String?
+  id          String   @id @default(cuid())
+  name        String
+  orders      Order[]
+  updatedAt   DateTime @updatedAt
+}
+
+model Coupon {
+  code        String
+  createdAt   DateTime @default(now())
+  description String?
+  id          String   @id @default(cuid())
+  name        String
+  orders      Order[]
+  updatedAt   DateTime @updatedAt
+}
+
+model Address {
+  addressLine_1 String
+  addressLine_2 String?
+  addressType   EnumAddressAddressType[]
+  city          String?
+  company       Company?
+  coordinates   String?
+  country       String?
+  createdAt     DateTime                 @default(now())
+  id            String                   @id @default(cuid())
+  postcode      String?
+  suburb        String?
+  updatedAt     DateTime                 @updatedAt
+}
+
+enum EnumOrderStatus {
+  Pending
+  InProgress
+  Completed
+}
+
+enum EnumAddressAddressType {
+  Billing
+  Shipping
+}
